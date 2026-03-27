@@ -1,0 +1,13 @@
+.tt-hjcp-static {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.tt-hjcp-static__title {
+	font-weight: 700;
+}
+
+.tt-hjcp-static__body {
+	opacity: 0.85;
+}
