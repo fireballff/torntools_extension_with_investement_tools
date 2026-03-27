@@ -1,10 +1,31 @@
 (async () => {
 	if (!getPageStatus().access) return;
 
-	let refreshInterval: number | undefined;
-	let panelContent: HTMLElement | undefined;
+	type OwnedItemKey = "xanax" | "ecstasy" | "eroticDvds";
 
-	const feature = featureManager.registerFeature(
+	const OWNED_ITEM_META: Record<OwnedItemKey, { label: string; matchers: string[] }> = {
+		xanax: {
+			label: "Xanax",
+			matchers: ["xanax"],
+		},
+		ecstasy: {
+			label: "Ecstasy",
+			matchers: ["ecstasy"],
+		},
+		eroticDvds: {
+			label: "Erotic DVDs",
+			matchers: ["erotic dvd", "erotic dvds"],
+		},
+	};
+
+	let panelContent: HTMLElement | undefined;
+	const manualOwnedFallbacks: Record<OwnedItemKey, string> = {
+		xanax: "",
+		ecstasy: "",
+		eroticDvds: "",
+	};
+
+	featureManager.registerFeature(
 		"Happy Jump Cash Planner",
 		"stocks",
 		() => settings.pages.stocks.happyJumpCashPlanner,
@@ -17,7 +38,9 @@
 				"userdata.money",
 				"userdata.networth",
 				"userdata.stocks",
+				"userdata.inventory",
 				"userdata.date",
+				"torndata.itemsMap",
 			],
 		},
 		async () => {
@@ -44,19 +67,9 @@
 
 		panelContent = content;
 		render();
-
-		refreshInterval = window.setInterval(() => {
-			if (!feature.enabled() || !findContainer("Happy Jump Cash Planner")) return;
-			render();
-		}, 30000);
 	}
 
 	function teardown() {
-		if (refreshInterval) {
-			clearInterval(refreshInterval);
-			refreshInterval = undefined;
-		}
-
 		panelContent = undefined;
 		removeContainer("Happy Jump Cash Planner");
 	}
@@ -65,35 +78,45 @@
 		if (!panelContent) return;
 		panelContent.innerHTML = "";
 
+		const wrapper = elementBuilder({ type: "div", class: "tt-hjcp" });
+
+		wrapper.appendChild(renderFinancialSection());
+		wrapper.appendChild(renderOwnedItemsSection());
+
+		panelContent.appendChild(wrapper);
+	}
+
+	function renderFinancialSection() {
 		const snapshot = getFinancialSnapshot();
 
-		const wrapper = elementBuilder({ type: "div", class: "tt-hjcp-financial" });
+		const section = elementBuilder({ type: "div", class: "tt-hjcp-section" });
 
-		wrapper.appendChild(
+		section.appendChild(
 			elementBuilder({
 				type: "div",
-				class: "tt-hjcp-financial__head",
+				class: "tt-hjcp-section__head",
 				children: [
 					elementBuilder({
 						type: "div",
-						class: "tt-hjcp-financial__intro",
+						class: "tt-hjcp-section__intro",
 						children: [
 							elementBuilder({
 								type: "div",
-								class: "tt-hjcp-financial__title",
+								class: "tt-hjcp-section__title",
 								text: "Auto-loaded financial snapshot",
 							}),
 							elementBuilder({
 								type: "div",
-								class: "tt-hjcp-financial__subtitle",
-								text: "This step shows current financial data immediately on panel load. Happy jump and allocation math comes next.",
+								class: "tt-hjcp-section__subtitle",
+								text: "Current cash and portfolio values load immediately. Happy jump and allocation math comes in later patches.",
 							}),
 						],
 					}),
 					elementBuilder({
 						type: "button",
-						class: "tt-btn",
-						text: "Refresh snapshot",
+						class: "tt-hjcp-button",
+						text: "Refresh panel",
+						attributes: { type: "button" },
 						events: {
 							click: () => render(),
 						},
@@ -102,7 +125,7 @@
 			})
 		);
 
-		const grid = elementBuilder({ type: "div", class: "tt-hjcp-financial__grid" });
+		const grid = elementBuilder({ type: "div", class: "tt-hjcp-grid" });
 
 		grid.appendChild(statCard("Available cash", formatMoney(snapshot.availableCash)));
 		grid.appendChild(statCard("Cash on hand", formatMoney(snapshot.cashOnHand)));
@@ -113,43 +136,148 @@
 		grid.appendChild(statCard("Stock positions tracked", formatInteger(snapshot.stockPositions)));
 		grid.appendChild(statCard("Total shares held", formatInteger(snapshot.totalSharesHeld)));
 
-		wrapper.appendChild(grid);
+		section.appendChild(grid);
 
-		wrapper.appendChild(
+		section.appendChild(
 			elementBuilder({
 				type: "div",
-				class: "tt-hjcp-financial__foot",
+				class: "tt-hjcp-section__foot",
 				children: [
 					elementBuilder({
 						type: "div",
-						class: "tt-hjcp-financial__note",
+						class: "tt-hjcp-note",
 						text: snapshot.updatedLabel,
 					}),
 					elementBuilder({
 						type: "div",
-						class: "tt-hjcp-financial__note",
+						class: "tt-hjcp-note",
 						text: snapshot.sourceLabel,
 					}),
 				],
 			})
 		);
 
-		panelContent.appendChild(wrapper);
+		return section;
+	}
+
+	function renderOwnedItemsSection() {
+		const snapshot = getOwnedItemsSnapshot();
+
+		const section = elementBuilder({ type: "div", class: "tt-hjcp-section" });
+
+		section.appendChild(
+			elementBuilder({
+				type: "div",
+				class: "tt-hjcp-section__intro",
+				children: [
+					elementBuilder({
+						type: "div",
+						class: "tt-hjcp-section__title",
+						text: "Owned happy jump items",
+					}),
+					elementBuilder({
+						type: "div",
+						class: "tt-hjcp-section__subtitle",
+						text: "Auto-filled from cached inventory when available. If a count cannot be detected, use the manual fallback field for that item.",
+					}),
+				],
+			})
+		);
+
+		const grid = elementBuilder({ type: "div", class: "tt-hjcp-grid" });
+
+		(Object.keys(OWNED_ITEM_META) as OwnedItemKey[]).forEach((key) => {
+			const meta = OWNED_ITEM_META[key];
+			const autoCount = snapshot[key];
+			const manualCount = parseManualCount(manualOwnedFallbacks[key]);
+			const effectiveCount = autoCount !== null ? autoCount : manualCount;
+
+			grid.appendChild(
+				elementBuilder({
+					type: "div",
+					class: "tt-hjcp-card",
+					children: [
+						elementBuilder({
+							type: "div",
+							class: "tt-hjcp-card__label",
+							text: meta.label,
+						}),
+						elementBuilder({
+							type: "div",
+							class: "tt-hjcp-card__value",
+							text: effectiveCount === null ? "Unavailable" : formatNumber(effectiveCount),
+						}),
+						elementBuilder({
+							type: "div",
+							class: "tt-hjcp-note",
+							text: autoCount === null ? "Auto: unavailable" : `Auto: ${formatNumber(autoCount)}`,
+						}),
+						elementBuilder({
+							type: "label",
+							class: "tt-hjcp-input-wrap",
+							children: [
+								elementBuilder({
+									type: "span",
+									class: "tt-hjcp-input-wrap__label",
+									text: "Manual fallback",
+								}),
+								elementBuilder({
+									type: "input",
+									class: "tt-hjcp-input",
+									attributes: {
+										type: "number",
+										min: "0",
+										step: "1",
+										placeholder: autoCount === null ? "Enter amount" : "Only needed if auto fails",
+									},
+									value: manualOwnedFallbacks[key],
+									events: {
+										input: (event) => {
+											const target = event.currentTarget as HTMLInputElement;
+											manualOwnedFallbacks[key] = target.value;
+											render();
+										},
+									},
+								}),
+							],
+						}),
+					],
+				})
+			);
+		});
+
+		section.appendChild(grid);
+
+		section.appendChild(
+			elementBuilder({
+				type: "div",
+				class: "tt-hjcp-section__foot",
+				children: [
+					elementBuilder({
+						type: "div",
+						class: "tt-hjcp-note",
+						text: snapshot.sourceLabel,
+					}),
+				],
+			})
+		);
+
+		return section;
 	}
 
 	function statCard(label: string, value: string) {
 		return elementBuilder({
 			type: "div",
-			class: "tt-hjcp-financial__card",
+			class: "tt-hjcp-card",
 			children: [
 				elementBuilder({
 					type: "div",
-					class: "tt-hjcp-financial__label",
+					class: "tt-hjcp-card__label",
 					text: label,
 				}),
 				elementBuilder({
 					type: "div",
-					class: "tt-hjcp-financial__value",
+					class: "tt-hjcp-card__value",
 					text: value,
 				}),
 			],
@@ -162,25 +290,10 @@
 		const networth = currentUserdata.networth || {};
 		const stocks = currentUserdata.stocks || {};
 
-		const cashOnHand = firstNumber([
-			money.onhand,
-			money.wallet,
-			networth.wallet,
-		]);
-
-		const vaultCash = firstNumber([
-			money.vault,
-			networth.vault,
-		]);
-
+		const cashOnHand = firstNumber([money.onhand, money.wallet, networth.wallet]);
+		const vaultCash = firstNumber([money.vault, networth.vault]);
 		const availableCash = sumNumbers([cashOnHand, vaultCash]);
-
-		const bankInvested = firstNumber([
-			money.city_bank?.amount,
-			money.bank?.amount,
-			networth.bank,
-		]);
-
+		const bankInvested = firstNumber([money.city_bank?.amount, money.bank?.amount, networth.bank]);
 		const networthTotal = firstNumber([networth.total]);
 		const stockMarketValue = firstNumber([networth.stockmarket]);
 
@@ -204,6 +317,91 @@
 		};
 	}
 
+	function getOwnedItemsSnapshot(): Record<OwnedItemKey, number | null> & { sourceLabel: string } {
+		const currentUserdata = ((typeof userdata !== "undefined" ? userdata : {}) as any) || {};
+		const inventory = currentUserdata.inventory;
+
+		if (!inventory) {
+			return {
+				xanax: null,
+				ecstasy: null,
+				eroticDvds: null,
+				sourceLabel: "Source: cached inventory unavailable in current userdata snapshot",
+			};
+		}
+
+		return {
+			xanax: findOwnedItemCount(inventory, OWNED_ITEM_META.xanax.matchers),
+			ecstasy: findOwnedItemCount(inventory, OWNED_ITEM_META.ecstasy.matchers),
+			eroticDvds: findOwnedItemCount(inventory, OWNED_ITEM_META.eroticDvds.matchers),
+			sourceLabel: "Source: cached TornTools userdata inventory when available",
+		};
+	}
+
+	function findOwnedItemCount(inventory: any, matchers: string[]) {
+		const normalizedMatchers = matchers.map((matcher) => matcher.toLowerCase());
+		let total = 0;
+		let found = false;
+
+		const items = normalizeInventoryEntries(inventory);
+
+		items.forEach((item) => {
+			const name = getInventoryItemName(item).toLowerCase();
+			if (!name) return;
+
+			const matches = normalizedMatchers.some((matcher) => name.includes(matcher));
+			if (!matches) return;
+
+			const amount = getInventoryItemAmount(item);
+			if (amount === null) return;
+
+			found = true;
+			total += amount;
+		});
+
+		return found ? total : null;
+	}
+
+	function normalizeInventoryEntries(inventory: any) {
+		if (Array.isArray(inventory)) return inventory;
+
+		if (inventory && typeof inventory === "object") {
+			return Object.values(inventory);
+		}
+
+		return [];
+	}
+
+	function getInventoryItemName(item: any) {
+		if (!item || typeof item !== "object") return "";
+
+		const directName = [item.name, item.itemName, item.title, item.item?.name].find((value) => typeof value === "string" && value.length > 0);
+		if (directName) return directName;
+
+		const itemId = firstNumber([item.id, item.ID, item.itemID, item.item_id]);
+		const itemsMap = ((typeof torndata !== "undefined" ? torndata : {}) as any)?.itemsMap;
+		if (itemId !== null && itemsMap && itemsMap[itemId] && typeof itemsMap[itemId].name === "string") {
+			return itemsMap[itemId].name;
+		}
+
+		return "";
+	}
+
+	function getInventoryItemAmount(item: any) {
+		if (!item || typeof item !== "object") return null;
+
+		const amount = firstNumber([
+			item.quantity,
+			item.amount,
+			item.count,
+			item.available,
+			item.owned,
+			item.qty,
+		]);
+
+		return amount;
+	}
+
 	function firstNumber(values: any[]) {
 		for (const value of values) {
 			const parsed = Number(value);
@@ -220,6 +418,15 @@
 		return valid.reduce((sum, value) => sum + value, 0);
 	}
 
+	function parseManualCount(value: string) {
+		if (!value.trim()) return null;
+
+		const parsed = Number(value);
+		if (!isFinite(parsed) || parsed < 0) return null;
+
+		return Math.floor(parsed);
+	}
+
 	function formatMoney(value: number | null) {
 		if (value === null) return "Unavailable";
 		return formatNumber(value, { currency: true });
@@ -229,5 +436,4 @@
 		if (value === null) return "Unavailable";
 		return formatNumber(value);
 	}
-})
-();
+})();
