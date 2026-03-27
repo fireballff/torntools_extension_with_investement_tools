@@ -1,13 +1,61 @@
-.tt-hjcp-static {
+.tt-hjcp-financial {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 10px;
 }
 
-.tt-hjcp-static__title {
+.tt-hjcp-financial__head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.tt-hjcp-financial__intro {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.tt-hjcp-financial__title {
 	font-weight: 700;
 }
 
-.tt-hjcp-static__body {
+.tt-hjcp-financial__subtitle,
+.tt-hjcp-financial__note {
 	opacity: 0.85;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.tt-hjcp-financial__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 8px;
+}
+
+.tt-hjcp-financial__card {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 8px 10px;
+	border-radius: 6px;
+	background: rgba(255, 255, 255, 0.03);
+}
+
+.tt-hjcp-financial__label {
+	font-size: 12px;
+	opacity: 0.8;
+}
+
+.tt-hjcp-financial__value {
+	font-weight: 700;
+	word-break: break-word;
+}
+
+.tt-hjcp-financial__foot {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
 }
