@@ -1,93 +1,68 @@
-.tt-hjcp {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-
-.tt-hjcp-section {
+#happyJumpCashPlanner .tt-hjcp {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
 }
 
-.tt-hjcp-section__head {
+#happyJumpCashPlanner .tt-hjcp-head {
 	display: flex;
-	align-items: flex-start;
 	justify-content: space-between;
-	gap: 12px;
-	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
 }
 
-.tt-hjcp-section__intro {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.tt-hjcp-section__title {
-	font-weight: 700;
-}
-
-.tt-hjcp-section__subtitle,
-.tt-hjcp-note {
-	opacity: 0.85;
-	font-size: 12px;
-	line-height: 1.4;
-}
-
-.tt-hjcp-grid {
+#happyJumpCashPlanner .tt-hjcp-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
 	gap: 8px;
 }
 
-.tt-hjcp-card {
+#happyJumpCashPlanner .tt-hjcp-field,
+#happyJumpCashPlanner .tt-hjcp-check,
+#happyJumpCashPlanner .tt-hjcp-target-rules {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	padding: 8px 10px;
-	border-radius: 6px;
-	background: rgba(255, 255, 255, 0.03);
-}
-
-.tt-hjcp-card__label {
 	font-size: 12px;
-	opacity: 0.8;
 }
 
-.tt-hjcp-card__value {
-	font-weight: 700;
-	word-break: break-word;
+#happyJumpCashPlanner .tt-hjcp-check {
+	flex-direction: row;
+	align-items: center;
+	margin-top: 18px;
 }
 
-.tt-hjcp-section__foot {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
+#happyJumpCashPlanner .tt-hjcp-field input,
+#happyJumpCashPlanner .tt-hjcp-target-rules textarea {
+	width: 100%;
+	box-sizing: border-box;
 }
 
-.tt-hjcp-button {
-	padding: 6px 10px;
-	border: 0;
-	border-radius: 6px;
-	cursor: pointer;
-	font-size: 12px;
-	font-weight: 700;
-}
-
-.tt-hjcp-input-wrap {
+#happyJumpCashPlanner .tt-hjcp-results {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	margin-top: 4px;
 }
 
-.tt-hjcp-input-wrap__label {
+#happyJumpCashPlanner .tt-hjcp-stat {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	font-size: 12px;
+}
+
+#happyJumpCashPlanner .tt-hjcp-note {
 	font-size: 11px;
 	opacity: 0.8;
 }
 
-.tt-hjcp-input {
-	width: 100%;
-	min-width: 0;
+#happyJumpCashPlanner .tt-hjcp-warning {
+	font-size: 12px;
+	color: var(--tt-red-300);
+}
+
+#happyJumpCashPlanner .tt-hjcp-empty {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--tt-red-300);
 }
