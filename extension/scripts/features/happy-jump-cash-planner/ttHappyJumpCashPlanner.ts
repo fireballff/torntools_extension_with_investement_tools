@@ -1,9 +1,9 @@
 (async () => {
 	if (!getPageStatus().access) return;
 
-	type OwnedItemKey = "xanax" | "ecstasy" | "eroticDvds";
+	type ItemKey = "xanax" | "ecstasy" | "eroticDvds";
 
-	const OWNED_ITEM_META: Record<OwnedItemKey, { label: string; matchers: string[] }> = {
+	const ITEM_META: Record<ItemKey, { label: string; matchers: string[] }> = {
 		xanax: {
 			label: "Xanax",
 			matchers: ["xanax"],
@@ -19,7 +19,12 @@
 	};
 
 	let panelContent: HTMLElement | undefined;
-	const manualOwnedFallbacks: Record<OwnedItemKey, string> = {
+	const manualOwnedInputs: Record<ItemKey, string> = {
+		xanax: "",
+		ecstasy: "",
+		eroticDvds: "",
+	};
+	const manualPriceFallbacks: Record<ItemKey, string> = {
 		xanax: "",
 		ecstasy: "",
 		eroticDvds: "",
@@ -38,7 +43,6 @@
 				"userdata.money",
 				"userdata.networth",
 				"userdata.stocks",
-				"userdata.inventory",
 				"userdata.date",
 				"torndata.itemsMap",
 			],
@@ -82,6 +86,7 @@
 
 		wrapper.appendChild(renderFinancialSection());
 		wrapper.appendChild(renderOwnedItemsSection());
+		wrapper.appendChild(renderMarketPricesSection());
 
 		panelContent.appendChild(wrapper);
 	}
@@ -161,8 +166,6 @@
 	}
 
 	function renderOwnedItemsSection() {
-		const snapshot = getOwnedItemsSnapshot();
-
 		const section = elementBuilder({ type: "div", class: "tt-hjcp-section" });
 
 		section.appendChild(
@@ -178,7 +181,7 @@
 					elementBuilder({
 						type: "div",
 						class: "tt-hjcp-section__subtitle",
-						text: "Auto-filled from cached inventory when available. If a count cannot be detected, use the manual fallback field for that item.",
+						text: "Owned item counts are manual only. Enter the amounts you currently have for Xanax, Ecstasy, and Erotic DVDs.",
 					}),
 				],
 			})
@@ -186,11 +189,9 @@
 
 		const grid = elementBuilder({ type: "div", class: "tt-hjcp-grid" });
 
-		(Object.keys(OWNED_ITEM_META) as OwnedItemKey[]).forEach((key) => {
-			const meta = OWNED_ITEM_META[key];
-			const autoCount = snapshot[key];
-			const manualCount = parseManualCount(manualOwnedFallbacks[key]);
-			const effectiveCount = autoCount !== null ? autoCount : manualCount;
+		(Object.keys(ITEM_META) as ItemKey[]).forEach((key) => {
+			const meta = ITEM_META[key];
+			const manualCount = parseManualCount(manualOwnedInputs[key]);
 
 			grid.appendChild(
 				elementBuilder({
@@ -205,12 +206,12 @@
 						elementBuilder({
 							type: "div",
 							class: "tt-hjcp-card__value",
-							text: effectiveCount === null ? "Unavailable" : formatNumber(effectiveCount),
+							text: manualCount === null ? "Enter amount" : formatNumber(manualCount),
 						}),
 						elementBuilder({
 							type: "div",
 							class: "tt-hjcp-note",
-							text: autoCount === null ? "Auto: unavailable" : `Auto: ${formatNumber(autoCount)}`,
+							text: "Source: manual input",
 						}),
 						elementBuilder({
 							type: "label",
@@ -219,7 +220,7 @@
 								elementBuilder({
 									type: "span",
 									class: "tt-hjcp-input-wrap__label",
-									text: "Manual fallback",
+									text: "Owned amount",
 								}),
 								elementBuilder({
 									type: "input",
@@ -228,13 +229,118 @@
 										type: "number",
 										min: "0",
 										step: "1",
-										placeholder: autoCount === null ? "Enter amount" : "Only needed if auto fails",
+										placeholder: "Enter amount",
 									},
-									value: manualOwnedFallbacks[key],
+									value: manualOwnedInputs[key],
 									events: {
 										input: (event) => {
 											const target = event.currentTarget as HTMLInputElement;
-											manualOwnedFallbacks[key] = target.value;
+											manualOwnedInputs[key] = target.value;
+											render();
+										},
+									},
+								}),
+							],
+						}),
+					],
+				})
+			);
+		});
+
+		section.appendChild(grid);
+
+		section.appendChild(
+			elementBuilder({
+				type: "div",
+				class: "tt-hjcp-section__foot",
+				children: [
+					elementBuilder({
+						type: "div",
+						class: "tt-hjcp-note",
+						text: "Manual item counts are intentional because inventory details are not being auto-fetched for this feature.",
+					}),
+				],
+			})
+		);
+
+		return section;
+	}
+
+	function renderMarketPricesSection() {
+		const snapshot = getMarketPriceSnapshot();
+
+		const section = elementBuilder({ type: "div", class: "tt-hjcp-section" });
+
+		section.appendChild(
+			elementBuilder({
+				type: "div",
+				class: "tt-hjcp-section__intro",
+				children: [
+					elementBuilder({
+						type: "div",
+						class: "tt-hjcp-section__title",
+						text: "Happy jump market prices",
+					}),
+					elementBuilder({
+						type: "div",
+						class: "tt-hjcp-section__subtitle",
+						text: "Auto-filled from cached Torn item values when available. If a price cannot be detected, use the manual fallback field for that item.",
+					}),
+				],
+			})
+		);
+
+		const grid = elementBuilder({ type: "div", class: "tt-hjcp-grid" });
+
+		(Object.keys(ITEM_META) as ItemKey[]).forEach((key) => {
+			const meta = ITEM_META[key];
+			const autoPrice = snapshot[key];
+			const manualPrice = parseManualPrice(manualPriceFallbacks[key]);
+			const effectivePrice = autoPrice !== null ? autoPrice : manualPrice;
+
+			grid.appendChild(
+				elementBuilder({
+					type: "div",
+					class: "tt-hjcp-card",
+					children: [
+						elementBuilder({
+							type: "div",
+							class: "tt-hjcp-card__label",
+							text: meta.label,
+						}),
+						elementBuilder({
+							type: "div",
+							class: "tt-hjcp-card__value",
+							text: effectivePrice === null ? "Unavailable" : formatMoney(effectivePrice),
+						}),
+						elementBuilder({
+							type: "div",
+							class: "tt-hjcp-note",
+							text: autoPrice === null ? "Auto: unavailable" : `Auto: ${formatMoney(autoPrice)}`,
+						}),
+						elementBuilder({
+							type: "label",
+							class: "tt-hjcp-input-wrap",
+							children: [
+								elementBuilder({
+									type: "span",
+									class: "tt-hjcp-input-wrap__label",
+									text: "Manual fallback price",
+								}),
+								elementBuilder({
+									type: "input",
+									class: "tt-hjcp-input",
+									attributes: {
+										type: "number",
+										min: "0",
+										step: "1",
+										placeholder: autoPrice === null ? "Enter price" : "Only needed if auto fails",
+									},
+									value: manualPriceFallbacks[key],
+									events: {
+										input: (event) => {
+											const target = event.currentTarget as HTMLInputElement;
+											manualPriceFallbacks[key] = target.value;
 											render();
 										},
 									},
@@ -317,89 +423,76 @@
 		};
 	}
 
-	function getOwnedItemsSnapshot(): Record<OwnedItemKey, number | null> & { sourceLabel: string } {
-		const currentUserdata = ((typeof userdata !== "undefined" ? userdata : {}) as any) || {};
-		const inventory = currentUserdata.inventory;
+	function getMarketPriceSnapshot(): Record<ItemKey, number | null> & { sourceLabel: string } {
+		const itemsMap = ((typeof torndata !== "undefined" ? torndata : {}) as any)?.itemsMap;
 
-		if (!inventory) {
+		if (!itemsMap) {
 			return {
 				xanax: null,
 				ecstasy: null,
 				eroticDvds: null,
-				sourceLabel: "Source: cached inventory unavailable in current userdata snapshot",
+				sourceLabel: "Source: cached item values unavailable in current torndata snapshot",
 			};
 		}
 
 		return {
-			xanax: findOwnedItemCount(inventory, OWNED_ITEM_META.xanax.matchers),
-			ecstasy: findOwnedItemCount(inventory, OWNED_ITEM_META.ecstasy.matchers),
-			eroticDvds: findOwnedItemCount(inventory, OWNED_ITEM_META.eroticDvds.matchers),
-			sourceLabel: "Source: cached TornTools userdata inventory when available",
+			xanax: findItemPrice(itemsMap, ITEM_META.xanax.matchers),
+			ecstasy: findItemPrice(itemsMap, ITEM_META.ecstasy.matchers),
+			eroticDvds: findItemPrice(itemsMap, ITEM_META.eroticDvds.matchers),
+			sourceLabel: "Source: cached TornTools item values when available",
 		};
 	}
 
-	function findOwnedItemCount(inventory: any, matchers: string[]) {
+	function findItemPrice(itemsMap: any, matchers: string[]) {
 		const normalizedMatchers = matchers.map((matcher) => matcher.toLowerCase());
-		let total = 0;
-		let found = false;
+		const items = normalizeEntries(itemsMap);
 
-		const items = normalizeInventoryEntries(inventory);
-
-		items.forEach((item) => {
-			const name = getInventoryItemName(item).toLowerCase();
-			if (!name) return;
+		for (const item of items) {
+			const name = getItemName(item).toLowerCase();
+			if (!name) continue;
 
 			const matches = normalizedMatchers.some((matcher) => name.includes(matcher));
-			if (!matches) return;
+			if (!matches) continue;
 
-			const amount = getInventoryItemAmount(item);
-			if (amount === null) return;
+			const price = getItemPrice(item);
+			if (price !== null) return price;
+		}
 
-			found = true;
-			total += amount;
-		});
-
-		return found ? total : null;
+		return null;
 	}
 
-	function normalizeInventoryEntries(inventory: any) {
-		if (Array.isArray(inventory)) return inventory;
+	function normalizeEntries(value: any) {
+		if (Array.isArray(value)) return value;
 
-		if (inventory && typeof inventory === "object") {
-			return Object.values(inventory);
+		if (value && typeof value === "object") {
+			return Object.values(value);
 		}
 
 		return [];
 	}
 
-	function getInventoryItemName(item: any) {
+	function getItemName(item: any) {
 		if (!item || typeof item !== "object") return "";
 
 		const directName = [item.name, item.itemName, item.title, item.item?.name].find((value) => typeof value === "string" && value.length > 0);
 		if (directName) return directName;
 
-		const itemId = firstNumber([item.id, item.ID, item.itemID, item.item_id]);
-		const itemsMap = ((typeof torndata !== "undefined" ? torndata : {}) as any)?.itemsMap;
-		if (itemId !== null && itemsMap && itemsMap[itemId] && typeof itemsMap[itemId].name === "string") {
-			return itemsMap[itemId].name;
-		}
-
 		return "";
 	}
 
-	function getInventoryItemAmount(item: any) {
+	function getItemPrice(item: any) {
 		if (!item || typeof item !== "object") return null;
 
-		const amount = firstNumber([
-			item.quantity,
-			item.amount,
-			item.count,
-			item.available,
-			item.owned,
-			item.qty,
+		return firstNumber([
+			item.market_value,
+			item.marketValue,
+			item.itemmarket_value,
+			item.itemmarketValue,
+			item.value,
+			item.price,
+			item.buy_price,
+			item.buyPrice,
 		]);
-
-		return amount;
 	}
 
 	function firstNumber(values: any[]) {
@@ -419,6 +512,15 @@
 	}
 
 	function parseManualCount(value: string) {
+		if (!value.trim()) return null;
+
+		const parsed = Number(value);
+		if (!isFinite(parsed) || parsed < 0) return null;
+
+		return Math.floor(parsed);
+	}
+
+	function parseManualPrice(value: string) {
 		if (!value.trim()) return null;
 
 		const parsed = Number(value);
