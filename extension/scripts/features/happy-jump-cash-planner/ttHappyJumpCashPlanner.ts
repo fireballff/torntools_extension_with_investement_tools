@@ -3,18 +3,15 @@
 
 	type OwnedItemKey = "xanax" | "ecstasy" | "eroticDvds";
 
-	const OWNED_ITEM_META: Record<OwnedItemKey, { label: string; matchers: string[] }> = {
+	const OWNED_ITEM_META: Record<OwnedItemKey, { label: string }> = {
 		xanax: {
 			label: "Xanax",
-			matchers: ["xanax"],
 		},
 		ecstasy: {
 			label: "Ecstasy",
-			matchers: ["ecstasy"],
 		},
 		eroticDvds: {
 			label: "Erotic DVDs",
-			matchers: ["erotic dvd", "erotic dvds"],
 		},
 	};
 
@@ -229,12 +226,12 @@
 										step: "1",
 										placeholder: autoCount === null ? "Enter amount" : "Only needed if auto fails",
 									},
-									value: manualOwnedFallbacks[key],
-									events: {
-										input: (event) => {
-											const target = event.currentTarget as HTMLInputElement;
-											manualOwnedFallbacks[key] = target.value;
-											render();
+										value: manualOwnedFallbacks[key],
+										events: {
+											change: (event) => {
+												const target = event.currentTarget as HTMLInputElement;
+												manualOwnedFallbacks[key] = target.value;
+												render();
 										},
 									},
 								}),
@@ -317,13 +314,13 @@
 	}
 
 	function getOwnedItemsSnapshot(): Record<OwnedItemKey, number | null> & { sourceLabel: string } {
-	return {
-		xanax: null,
-		ecstasy: null,
-		eroticDvds: null,
-		sourceLabel: "Source: manual input only",
-	};
-}
+		return {
+			xanax: null,
+			ecstasy: null,
+			eroticDvds: null,
+			sourceLabel: "Source: manual input only",
+		};
+	}
 
 	function firstNumber(values: any[]) {
 		for (const value of values) {
