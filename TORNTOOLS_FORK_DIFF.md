@@ -18,7 +18,7 @@ This repository branch (`work`) is **11 commits ahead** of `upstream/master` (Me
 2. **Progressive rollout strategy**  
    The planner text explicitly says full allocation math comes later, indicating an iterative release approach.
 3. **Reliability over automation for owned item counts**  
-   Final state uses manual-only source labeling for owned jump items, likely due instability/permissions/API completeness concerns for inventory reads.
+   Final state uses manual-only source labeling for owned jump items, likely due to instability, permissions, or API completeness concerns for inventory reads.
 4. **MV3 compliance/robustness**  
    The manifest background block removes the invalid MV2-style `background.scripts` list and keeps only `service_worker`, which aligns with Chrome MV3 behavior.
 
