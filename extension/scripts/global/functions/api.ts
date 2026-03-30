@@ -95,8 +95,11 @@ async function fetchData<R = any>(l: FetchLocation, partialOptions: Partial<Fetc
 
 				path = `${options.section}/${options.id || ""}`;
 
-				params.append("selections", [...options.selections, ...options.legacySelections].join(","));
-				params.append("legacy", options.legacySelections.join(","));
+				const legacySelections = [...new Set(options.legacySelections)];
+				const selections = [...new Set([...options.selections, ...legacySelections])];
+
+				params.append("selections", selections.join(","));
+				params.append("legacy", legacySelections.join(","));
 				params.append("key", options.key || api.torn.key);
 				if (settings.apiUsage.comment) {
 					params.append("comment", settings.apiUsage.comment);
