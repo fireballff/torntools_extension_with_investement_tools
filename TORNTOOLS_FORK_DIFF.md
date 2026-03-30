@@ -22,7 +22,10 @@ This repository’s current branch is ahead of `upstream/master` (Mephiles/tornt
 4. **MV3 compliance/robustness**  
    The manifest background block removes the invalid MV2-style `background.scripts` list and keeps only `service_worker`, which aligns with Chrome MV3 behavior.
 
-## Upstream comparison base
+## Upstream reference
 
 - Upstream remote: `https://github.com/Mephiles/torntools_extension.git`
-- Base commit currently matching `upstream/master`: `96d19c44`
+- To compare the current state of this fork against upstream, run:
+  ```
+  git fetch upstream && git log --oneline upstream/master..HEAD
+  ```
