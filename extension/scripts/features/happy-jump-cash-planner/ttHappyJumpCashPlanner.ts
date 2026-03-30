@@ -29,9 +29,15 @@
 		null,
 		initialize,
 		teardown,
-		{
-			storage: ["settings.pages.stocks.happyJumpCashPlanner", "userdata.money", "userdata.networth", "userdata.stocks", "userdata.date"],
-		},
+			{
+				storage: [
+					"settings.pages.stocks.happyJumpCashPlanner",
+					"userdata.money",
+					"userdata.networth",
+					"userdata.stocks",
+					"userdata.date",
+				],
+			},
 		async () => {
 			await checkDevice();
 
@@ -43,12 +49,7 @@
 
 	async function initialize() {
 		await requireElement("#stockmarketroot");
-		const existingContent = findContainer("Happy Jump Cash Planner", { selector: "main" });
-		if (existingContent) {
-			panelContent = existingContent;
-			render();
-			return;
-		}
+		if (findContainer("Happy Jump Cash Planner")) return;
 
 		const stockMarketRoot = document.querySelector<HTMLElement>("#stockmarketroot");
 		if (!stockMarketRoot) return;
@@ -226,12 +227,12 @@
 										step: "1",
 										placeholder: autoCount === null ? "Enter amount" : "Only needed if auto fails",
 									},
-									value: manualOwnedFallbacks[key],
-									events: {
-										change: (event) => {
-											const target = event.currentTarget as HTMLInputElement;
-											manualOwnedFallbacks[key] = target.value;
-											render();
+										value: manualOwnedFallbacks[key],
+										events: {
+											change: (event) => {
+												const target = event.currentTarget as HTMLInputElement;
+												manualOwnedFallbacks[key] = target.value;
+												render();
 										},
 									},
 								}),
@@ -310,8 +311,7 @@
 			stockMarketValue,
 			stockPositions,
 			totalSharesHeld,
-			updatedLabel:
-				updatedAt > 0 ? `Snapshot updated ${formatTime({ milliseconds: ageMilliseconds }, { type: "ago" })}` : "Snapshot update time unavailable",
+			updatedLabel: updatedAt > 0 ? `Snapshot updated ${formatTime({ milliseconds: ageMilliseconds }, { type: "ago" })}` : "Snapshot update time unavailable",
 			sourceLabel: "Source: cached TornTools userdata (money / networth / stocks)",
 		};
 	}
