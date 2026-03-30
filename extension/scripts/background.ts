@@ -659,7 +659,7 @@ async function updateUserdata(forceUpdate = false) {
 	}
 
 	async function notifyStatusChange() {
-		if (!settings.notifications.types.global || !settings.notifications.types.status || !oldUserdata.profile.status) return;
+		if (!settings.notifications.types.global || !settings.notifications.types.status || !oldUserdata?.profile?.status || !userdata?.profile?.status) return;
 
 		const previous = oldUserdata.profile.status.state;
 		const current = userdata.profile.status.state;

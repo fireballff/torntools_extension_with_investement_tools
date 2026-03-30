@@ -3,18 +3,15 @@
 
 	type OwnedItemKey = "xanax" | "ecstasy" | "eroticDvds";
 
-	const OWNED_ITEM_META: Record<OwnedItemKey, { label: string; matchers: string[] }> = {
+	const OWNED_ITEM_META: Record<OwnedItemKey, { label: string }> = {
 		xanax: {
 			label: "Xanax",
-			matchers: ["xanax"],
 		},
 		ecstasy: {
 			label: "Ecstasy",
-			matchers: ["ecstasy"],
 		},
 		eroticDvds: {
 			label: "Erotic DVDs",
-			matchers: ["erotic dvd", "erotic dvds"],
 		},
 	};
 
@@ -33,14 +30,7 @@
 		initialize,
 		teardown,
 		{
-			storage: [
-				"settings.pages.stocks.happyJumpCashPlanner",
-				"userdata.money",
-				"userdata.networth",
-				"userdata.stocks",
-				"userdata.date",
-				"torndata.itemsMap",
-			],
+			storage: ["settings.pages.stocks.happyJumpCashPlanner", "userdata.money", "userdata.networth", "userdata.stocks", "userdata.date"],
 		},
 		async () => {
 			await checkDevice();
@@ -52,16 +42,23 @@
 	);
 
 	async function initialize() {
-		await requireElement("#stockmarketroot h4");
-		if (findContainer("Happy Jump Cash Planner")) return;
+		await requireElement("#stockmarketroot");
+		const existingContent = findContainer("Happy Jump Cash Planner", { selector: "main" });
+		if (existingContent) {
+			panelContent = existingContent;
+			render();
+			return;
+		}
 
-		const target = document.querySelector("#stockmarketroot h4") || document.querySelector("#stockmarketroot");
-		if (!target) return;
+		const stockMarketRoot = document.querySelector<HTMLElement>("#stockmarketroot");
+		if (!stockMarketRoot) return;
+		const target = stockMarketRoot.firstElementChild || stockMarketRoot;
 
 		const { content } = createContainer("Happy Jump Cash Planner", {
 			previousElement: target,
 			compact: true,
-			class: "mt10",
+			class: "mt10 mb10",
+			filter: true,
 		});
 
 		panelContent = content;
@@ -231,7 +228,7 @@
 									},
 									value: manualOwnedFallbacks[key],
 									events: {
-										input: (event) => {
+										change: (event) => {
 											const target = event.currentTarget as HTMLInputElement;
 											manualOwnedFallbacks[key] = target.value;
 											render();
@@ -300,7 +297,9 @@
 		const stockPositions = stockEntries.filter((entry) => Number(entry?.total_shares || 0) > 0).length;
 		const totalSharesHeld = stockEntries.reduce((sum, entry) => sum + Math.max(0, Number(entry?.total_shares || 0)), 0);
 
-		const updatedAt = Number(currentUserdata.date || 0);
+		const updatedAtRaw = Number(currentUserdata.date || 0);
+		const updatedAt = updatedAtRaw > 0 && updatedAtRaw < 1_000_000_000_000 ? updatedAtRaw * 1000 : updatedAtRaw;
+		const ageMilliseconds = updatedAt > 0 ? Math.max(0, Date.now() - updatedAt) : 0;
 
 		return {
 			cashOnHand,
@@ -311,19 +310,20 @@
 			stockMarketValue,
 			stockPositions,
 			totalSharesHeld,
-			updatedLabel: updatedAt > 0 ? `Snapshot updated ${formatTime({ milliseconds: Date.now() - updatedAt }, { type: "ago" })}` : "Snapshot update time unavailable",
+			updatedLabel:
+				updatedAt > 0 ? `Snapshot updated ${formatTime({ milliseconds: ageMilliseconds }, { type: "ago" })}` : "Snapshot update time unavailable",
 			sourceLabel: "Source: cached TornTools userdata (money / networth / stocks)",
 		};
 	}
 
 	function getOwnedItemsSnapshot(): Record<OwnedItemKey, number | null> & { sourceLabel: string } {
-	return {
-		xanax: null,
-		ecstasy: null,
-		eroticDvds: null,
-		sourceLabel: "Source: manual input only",
-	};
-}
+		return {
+			xanax: null,
+			ecstasy: null,
+			eroticDvds: null,
+			sourceLabel: "Source: manual input only",
+		};
+	}
 
 	function firstNumber(values: any[]) {
 		for (const value of values) {
