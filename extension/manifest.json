@@ -7,21 +7,8 @@
 	"action": { "default_title": "TornTools", "default_popup": "pages/popup/popup.html", "default_icon": "resources/images/icon_128.png" },
 	"author": "Gregor Kaljulaid - Mephiles[2087524]",
 	"background": {
-		"service_worker": "scripts/background.js",
-		"scripts": [
-			"scripts/global/globalClasses.js",
-			"scripts/global/globalData.js",
-			"scripts/global/functions/browser.js",
-			"scripts/global/functions/database.js",
-			"scripts/global/functions/extension.js",
-			"scripts/global/functions/formatting.js",
-			"scripts/global/functions/utilities.js",
-			"scripts/global/functions/api.js",
-			"scripts/global/functions/api-external.js",
-			"scripts/global/functions/torn.js",
-			"scripts/background.js"
-		]
-	},
+  "service_worker": "scripts/background.js"
+},
 	"permissions": ["storage", "notifications", "background", "offscreen", "alarms"],
 	"host_permissions": ["https://torn.com/"],
 	"optional_host_permissions": [
@@ -629,14 +616,16 @@
 				"scripts/features/stocks-filter/ttStocksFilter.css",
 				"scripts/features/stock-acronyms/ttStockAcronyms.css",
 				"scripts/features/total-portfolio-value/ttTotalPortfolioValue.css",
-				"scripts/features/hide-stocks/ttHideStocks.css"
+				"scripts/features/hide-stocks/ttHideStocks.css",
+				"scripts/features/happy-jump-cash-planner/ttHappyJumpCashPlanner.css"
 			],
 			"js": [
 				"scripts/global/functions/filters.js",
 				"scripts/features/stocks-filter/ttStocksFilter.js",
 				"scripts/features/stock-acronyms/ttStockAcronyms.js",
 				"scripts/features/total-portfolio-value/ttTotalPortfolioValue.js",
-				"scripts/features/hide-stocks/ttHideStocks.js"
+				"scripts/features/hide-stocks/ttHideStocks.js",
+				"scripts/features/happy-jump-cash-planner/ttHappyJumpCashPlanner.js"
 			],
 			"run_at": "document_end"
 		},
