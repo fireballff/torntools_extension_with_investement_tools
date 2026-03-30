@@ -1,6 +1,6 @@
 # Fork vs Original TornTools (`upstream/master`) Summary
 
-This repository branch (`work`) is **11 commits ahead** of `upstream/master` (Mephiles/torntools_extension).
+As of March 2026, this repository diverges from `upstream/master` (Mephiles/torntools_extension). The details below reflect the fork state at that time; the exact commit distance and base commit may have changed since.
 
 ## What changed
 
@@ -25,4 +25,4 @@ This repository branch (`work`) is **11 commits ahead** of `upstream/master` (Me
 ## Upstream comparison base
 
 - Upstream remote: `https://github.com/Mephiles/torntools_extension.git`
-- Base commit currently matching `upstream/master`: `96d19c44`
+- Base commit noted as of March 2026: `96d19c44` (may have advanced since then)
