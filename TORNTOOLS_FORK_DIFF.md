@@ -1,6 +1,6 @@
 # Fork vs Original TornTools (`upstream/master`) Summary
 
-This repository branch (`work`) is **11 commits ahead** of `upstream/master` (Mephiles/torntools_extension).
+This repository’s current branch is ahead of `upstream/master` (Mephiles/torntools_extension). To see the exact number of commits ahead in your local clone, run: `git fetch upstream && git log --oneline upstream/master..HEAD | wc -l`.
 
 ## What changed
 

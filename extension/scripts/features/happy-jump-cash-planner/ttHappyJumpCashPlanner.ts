@@ -227,12 +227,12 @@
 										step: "1",
 										placeholder: autoCount === null ? "Enter amount" : "Only needed if auto fails",
 									},
-									value: manualOwnedFallbacks[key],
-									events: {
-										change: (event) => {
-											const target = event.currentTarget as HTMLInputElement;
-											manualOwnedFallbacks[key] = target.value;
-											render();
+										value: manualOwnedFallbacks[key],
+										events: {
+											change: (event) => {
+												const target = event.currentTarget as HTMLInputElement;
+												manualOwnedFallbacks[key] = target.value;
+												render();
 										},
 									},
 								}),
