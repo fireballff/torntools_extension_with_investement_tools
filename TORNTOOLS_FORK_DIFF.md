@@ -1,6 +1,6 @@
 # Fork vs Original TornTools (`upstream/master`) Summary
 
-As of March 2026, this repository diverges from `upstream/master` (Mephiles/torntools_extension). The details below reflect the fork state at that time; the exact commit distance and base commit may have changed since.
+This repository’s current branch is ahead of `upstream/master` (Mephiles/torntools_extension). To see the exact number of commits ahead in your local clone, run: `git fetch upstream && git log --oneline upstream/master..HEAD | wc -l`.
 
 ## What changed
 
@@ -18,11 +18,14 @@ As of March 2026, this repository diverges from `upstream/master` (Mephiles/torn
 2. **Progressive rollout strategy**  
    The planner text explicitly says full allocation math comes later, indicating an iterative release approach.
 3. **Reliability over automation for owned item counts**  
-   Final state uses manual-only source labeling for owned jump items, likely due to instability/permissions/API completeness concerns for inventory reads.
+   Final state uses manual-only source labeling for owned jump items, likely due instability/permissions/API completeness concerns for inventory reads.
 4. **MV3 compliance/robustness**  
    The manifest background block removes the invalid MV2-style `background.scripts` list and keeps only `service_worker`, which aligns with Chrome MV3 behavior.
 
-## Upstream comparison base
+## Upstream reference
 
 - Upstream remote: `https://github.com/Mephiles/torntools_extension.git`
-- Base commit noted as of March 2026: `96d19c44` (may have advanced since then)
+- To compare the current state of this fork against upstream, run:
+  ```
+  git fetch upstream && git log --oneline upstream/master..HEAD
+  ```
