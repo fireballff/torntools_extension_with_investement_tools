@@ -29,16 +29,15 @@
 		null,
 		initialize,
 		teardown,
-		{
-			storage: [
-				"settings.pages.stocks.happyJumpCashPlanner",
-				"userdata.money",
-				"userdata.networth",
-				"userdata.stocks",
-				"userdata.date",
-				"torndata.itemsMap",
-			],
-		},
+			{
+				storage: [
+					"settings.pages.stocks.happyJumpCashPlanner",
+					"userdata.money",
+					"userdata.networth",
+					"userdata.stocks",
+					"userdata.date",
+				],
+			},
 		async () => {
 			await checkDevice();
 
@@ -299,7 +298,9 @@
 		const stockPositions = stockEntries.filter((entry) => Number(entry?.total_shares || 0) > 0).length;
 		const totalSharesHeld = stockEntries.reduce((sum, entry) => sum + Math.max(0, Number(entry?.total_shares || 0)), 0);
 
-		const updatedAt = Number(currentUserdata.date || 0);
+		const updatedAtRaw = Number(currentUserdata.date || 0);
+		const updatedAt = updatedAtRaw > 0 && updatedAtRaw < 1_000_000_000_000 ? updatedAtRaw * 1000 : updatedAtRaw;
+		const ageMilliseconds = updatedAt > 0 ? Math.max(0, Date.now() - updatedAt) : 0;
 
 		return {
 			cashOnHand,
@@ -310,7 +311,7 @@
 			stockMarketValue,
 			stockPositions,
 			totalSharesHeld,
-			updatedLabel: updatedAt > 0 ? `Snapshot updated ${formatTime({ milliseconds: Date.now() - updatedAt }, { type: "ago" })}` : "Snapshot update time unavailable",
+			updatedLabel: updatedAt > 0 ? `Snapshot updated ${formatTime({ milliseconds: ageMilliseconds }, { type: "ago" })}` : "Snapshot update time unavailable",
 			sourceLabel: "Source: cached TornTools userdata (money / networth / stocks)",
 		};
 	}
