@@ -3,18 +3,15 @@
 
 	type OwnedItemKey = "xanax" | "ecstasy" | "eroticDvds";
 
-	const OWNED_ITEM_META: Record<OwnedItemKey, { label: string; matchers: string[] }> = {
+	const OWNED_ITEM_META: Record<OwnedItemKey, { label: string }> = {
 		xanax: {
 			label: "Xanax",
-			matchers: ["xanax"],
 		},
 		ecstasy: {
 			label: "Ecstasy",
-			matchers: ["ecstasy"],
 		},
 		eroticDvds: {
 			label: "Erotic DVDs",
-			matchers: ["erotic dvd", "erotic dvds"],
 		},
 	};
 
@@ -52,16 +49,18 @@
 	);
 
 	async function initialize() {
-		await requireElement("#stockmarketroot h4");
+		await requireElement("#stockmarketroot");
 		if (findContainer("Happy Jump Cash Planner")) return;
 
-		const target = document.querySelector("#stockmarketroot h4") || document.querySelector("#stockmarketroot");
-		if (!target) return;
+		const stockMarketRoot = document.querySelector<HTMLElement>("#stockmarketroot");
+		if (!stockMarketRoot) return;
+		const target = stockMarketRoot.firstElementChild || stockMarketRoot;
 
 		const { content } = createContainer("Happy Jump Cash Planner", {
 			previousElement: target,
 			compact: true,
-			class: "mt10",
+			class: "mt10 mb10",
+			filter: true,
 		});
 
 		panelContent = content;
@@ -229,12 +228,12 @@
 										step: "1",
 										placeholder: autoCount === null ? "Enter amount" : "Only needed if auto fails",
 									},
-									value: manualOwnedFallbacks[key],
-									events: {
-										input: (event) => {
-											const target = event.currentTarget as HTMLInputElement;
-											manualOwnedFallbacks[key] = target.value;
-											render();
+										value: manualOwnedFallbacks[key],
+										events: {
+											change: (event) => {
+												const target = event.currentTarget as HTMLInputElement;
+												manualOwnedFallbacks[key] = target.value;
+												render();
 										},
 									},
 								}),
@@ -317,13 +316,13 @@
 	}
 
 	function getOwnedItemsSnapshot(): Record<OwnedItemKey, number | null> & { sourceLabel: string } {
-	return {
-		xanax: null,
-		ecstasy: null,
-		eroticDvds: null,
-		sourceLabel: "Source: manual input only",
-	};
-}
+		return {
+			xanax: null,
+			ecstasy: null,
+			eroticDvds: null,
+			sourceLabel: "Source: manual input only",
+		};
+	}
 
 	function firstNumber(values: any[]) {
 		for (const value of values) {
