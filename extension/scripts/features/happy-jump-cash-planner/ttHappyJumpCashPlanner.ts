@@ -141,10 +141,10 @@
 			ecstasy: toBuy.ecstasy * prices.ecstasy,
 			eroticDvd: toBuy.eroticDvd * prices.eroticDvd,
 		};
-		const happyJumpBudget = hasAllItemPrices ? subtotals.xanax + subtotals.ecstasy + subtotals.eroticDvd : 0;
-		const allocatableCash = Math.max(0, availableCash - untouchedReserve - happyJumpBudget);
+		const happyJumpBudget = hasAllItemPrices ? subtotals.xanax + subtotals.ecstasy + subtotals.eroticDvd : undefined;
+		const allocatableCash = happyJumpBudget !== undefined ? Math.max(0, availableCash - untouchedReserve - happyJumpBudget) : undefined;
 
-		const allocation = allocateStocks(stockRulesText, allocatableCash, maxSharePrice, userStocks);
+		const allocation = allocatableCash !== undefined ? allocateStocks(stockRulesText, allocatableCash, maxSharePrice, userStocks) : undefined;
 
 		status.textContent = warnings.length ? warnings.join(" ") : "Planner ready.";
 		status.classList.toggle("warning", warnings.length > 0);
@@ -166,10 +166,12 @@
 			row("Ecstasy subtotal", hasAllItemPrices ? formatNumber(subtotals.ecstasy, { currency: true }) : "Unavailable"),
 			row("Erotic DVDs subtotal", hasAllItemPrices ? formatNumber(subtotals.eroticDvd, { currency: true }) : "Unavailable"),
 			row("Total happy jump budget", hasAllItemPrices ? formatNumber(happyJumpBudget, { currency: true }) : "Unavailable"),
-			row("Allocatable cash", formatNumber(allocatableCash, { currency: true })),
-			row("Stock allocation spend", formatNumber(allocation.spent, { currency: true })),
-			row("Bank remainder recommendation", formatNumber(allocation.remainder, { currency: true })),
-			`<div class="tt-hjp-stock-lines">${allocation.lines.length ? allocation.lines.join("<br>") : "No valid stock rules provided."}</div>`,
+			row("Allocatable cash", allocatableCash !== undefined ? formatNumber(allocatableCash, { currency: true }) : "Unavailable"),
+			row("Stock allocation spend", allocation ? formatNumber(allocation.spent, { currency: true }) : "Unavailable"),
+			row("Bank remainder recommendation", allocation ? formatNumber(allocation.remainder, { currency: true }) : "Unavailable"),
+			`<div class="tt-hjp-stock-lines">${
+				allocation ? (allocation.lines.length ? allocation.lines.join("<br>") : "No valid stock rules provided.") : "Stock allocation unavailable."
+			}</div>`,
 		].join("");
 	}
 
