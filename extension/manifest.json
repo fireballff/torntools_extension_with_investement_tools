@@ -124,7 +124,6 @@
 			"js": [
 				"resources/images/svg-icons/cross.js",
 				"scripts/content/global/ttGlobal.js",
-				"scripts/content/global/ttGlobal.js",
 				"scripts/features/colored-chat/ttColoredChat.js",
 				"scripts/features/search-chat/ttSearchChat.js",
 				"scripts/features/chat-highlight/ttChatHighlight.js",
@@ -629,6 +628,7 @@
 				"scripts/features/stocks-filter/ttStocksFilter.css",
 				"scripts/features/stock-acronyms/ttStockAcronyms.css",
 				"scripts/features/total-portfolio-value/ttTotalPortfolioValue.css",
+				"scripts/features/happy-jump-cash-planner/ttHappyJumpCashPlanner.css",
 				"scripts/features/hide-stocks/ttHideStocks.css"
 			],
 			"js": [
@@ -636,6 +636,7 @@
 				"scripts/features/stocks-filter/ttStocksFilter.js",
 				"scripts/features/stock-acronyms/ttStockAcronyms.js",
 				"scripts/features/total-portfolio-value/ttTotalPortfolioValue.js",
+				"scripts/features/happy-jump-cash-planner/ttHappyJumpCashPlanner.js",
 				"scripts/features/hide-stocks/ttHideStocks.js"
 			],
 			"run_at": "document_end"
