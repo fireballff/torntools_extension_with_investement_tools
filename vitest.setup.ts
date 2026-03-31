@@ -64,9 +64,14 @@ const loadCore = (path: string) => loadScript(path, coreModulesRaw[path]);
 ORDERED_FILES.forEach(loadCore);
 
 const allModules = import.meta.glob(["./extension/scripts/global/**/*.ts", "!**/*.test.ts"]);
+const SKIP_DYNAMIC_IMPORTS = new Set([
+	"./extension/scripts/global/featureManager.ts",
+	"./extension/scripts/global/functions/filters.ts",
+]);
 
 for (const path in allModules) {
 	if (ORDERED_FILES.includes(path)) continue;
+	if (SKIP_DYNAMIC_IMPORTS.has(path)) continue;
 
 	try {
 		await allModules[path]();
